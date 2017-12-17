@@ -9,75 +9,76 @@ x = 0
 y = 0
 yaw = 0
 
-# define state
-class XXXXXXXXX(smach.State):
+class Keyboard_move(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['XXXXXXXXX'])
+        smach.State.__init__(self, outcomes=['outcome1'])
 
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state XXXXXXXXX')
+        rospy.loginfo('Executing state Keyboard_move')
 
-        # Write down what you want to do
+        while (x < 0.1):
+            # print x,y,yaw
+            rospy.sleep(0.5)
+
  
-        return 'XXXXXXXXX'   # return your outcome
+        return 'outcome1'
 
 
-# define state
-class XXXXXXXXX(smach.State):
+# define state Foo
+class GO_Straight(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['XXXXXXXXX','XXXXXXXXX'])
+        smach.State.__init__(self, outcomes=['outcome1','outcome2'])
 
-        # Set_up_ros_action (if you need to use smach_action)
+        # Set_up_ros_action
         self.client = actionlib.SimpleActionClient('smach_action', smachAction)
         self.client.wait_for_server()
 
+        self.counter = 0
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state XXXXXXXXX')
+        rospy.loginfo('Executing state Go_Straight')
 
-
-        # Write down what you want to do or your policy for outcome
-        if XXXXXXXXX:
-
-            return 'XXXXXXXXX'  # return your outcome
+        if self.counter < 3:
+            self.pub_action_goal(20)
+            self.counter += 1
+            return 'outcome1'
         else:
-            return 'XXXXXXXXX'  # return your outcome
+            return 'outcome2'
 
-
-############### call action for specific motion ###############
-    def pub_action_goal(self, distance):      
+    def pub_action_goal(self, distance):
         # Creates a goal to send to the action server.
         goal = smachGoal(action_id=0, number=distance)
+
         # Sends the goal to the action server.
         self.client.send_goal(goal)
+
         # Waits for the server to finish performing the action.
         self.client.wait_for_result()
-################################################################
 
-# define state
-class XXXXXXXXX(smach.State):
+
+# define state Bar
+class Go_circle(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['XXXXXXXXX'])
+        smach.State.__init__(self, outcomes=['outcome1'])
         # Set_up_ros_action
         self.client = actionlib.SimpleActionClient('smach_action', smachAction)
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state XXXXXXXXX')
+        self.pub_action_goal(0.5)
+        rospy.loginfo('Executing state Go_circle')
+        return 'outcome1'
 
-        # Write down what you want to do or your policy for outcome
-
-        return 'XXXXXXXXX'
-        
-############### call action for specific motion ###############
     def pub_action_goal(self, distance):
+
         # Creates a goal to send to the action server.
         goal = smachGoal(action_id=1, number=distance)
+
         # Sends the goal to the action server.
         self.client.send_goal(goal)
+
         # Waits for the server to finish performing the action.
         self.client.wait_for_result()
-################################################################
         
 def main():
     rospy.init_node('smach_example_state_machine')
@@ -88,12 +89,12 @@ def main():
     # Open the container
     with sm:
         # Add states to the container
-        smach.StateMachine.add('XXXXXXXXX', Keyboard_move(), 
-                               transitions={'XXXXXXXXX':'XXXXXXXXX'})
-        smach.StateMachine.add('XXXXXXXXX', GO_Straight(), 
-                               transitions={'XXXXXXXXX':'XXXXXXXXX', 'XXXXXXXXX':'outcome4'})
-        smach.StateMachine.add('XXXXXXXXX', Go_circle(), 
-                               transitions={'XXXXXXXXX':'XXXXXXXXX'})
+        smach.StateMachine.add('Keyboard_move', Keyboard_move(), 
+                               transitions={'outcome1':'Go_Straight'})
+        smach.StateMachine.add('Go_Straight', GO_Straight(), 
+                               transitions={'outcome1':'Go_circle', 'outcome2':'outcome4'})
+        smach.StateMachine.add('Go_circle', Go_circle(), 
+                               transitions={'outcome1':'Go_Straight'})
 
     sis = smach_ros.IntrospectionServer('server_name', sm, '/LAB10_ROS_SMACH')
     sis.start()
